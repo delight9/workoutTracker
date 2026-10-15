@@ -1,0 +1,467 @@
+# Complete Mobile Workout Tracker with Checklists
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Complete Hockey Tracker App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            -webkit-tap-highlight-color: transparent;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+        .scroll-touch {
+            -webkit-overflow-scrolling: touch;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen antialiased select-none">
+
+    <div class="max-w-md mx-auto px-3 py-4 sm:p-6 min-h-screen flex flex-col justify-between">
+
+        <!-- Top App Navigation Container -->
+        <div>
+            <!-- Header Section Card -->
+            <div class="mb-4 bg-slate-800 p-4 rounded-2xl border border-slate-700 shadow-xl flex flex-col gap-3">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <div class="p-2 bg-blue-600/20 rounded-xl border border-blue-500/30 text-blue-400">
+
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        </div>
+                        <div>
+                            <h1 class="text-lg font-bold tracking-tight text-white">Complete Performance Log</h1>
+                            <p class="text-xs text-slate-400">iPhone 16 Full-Workout Edition</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Controls Block -->
+                <div class="grid grid-cols-2 gap-2 items-center pt-1 border-t border-slate-700/60">
+                    <div>
+                        <label for="log-date" class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Session Date</label>
+                        <input type="date" id="log-date" class="w-full bg-slate-900 border border-slate-600 text-slate-100 text-sm rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block p-2.5 outline-none font-medium">
+                    </div>
+                    <div class="self-end">
+                        <button onclick="copyCSVToClipboard()" class="w-full inline-flex items-center justify-center gap-1.5 bg-emerald-600 active:bg-emerald-700 text-white font-semibold text-xs py-3 px-3 rounded-xl transition-colors shadow-md">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+                            Copy CSV
+
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Custom App Toast Notification Popup -->
+            <div id="notification-box" class="hidden mb-3 p-3 rounded-xl bg-emerald-950/80 border border-emerald-500/30 text-emerald-300 text-xs flex items-center justify-between backdrop-blur-sm transition-all duration-300">
+                <span id="notification-text" class="font-medium"></span>
+                <button onclick="hideNotification()" class="text-emerald-400 hover:text-emerald-200 text-base font-bold px-2">×</button>
+            </div>
+
+            <!-- Tab Segmented Selection Menu -->
+            <div class="bg-slate-800 p-1 rounded-xl border border-slate-700 shadow-inner mb-4 grid grid-cols-3 text-center text-xs font-semibold">
+                <button onclick="switchTab('day1')" id="tab-day1" class="py-2.5 rounded-lg transition-all text-white bg-blue-600 shadow-md">Day 1</button>
+                <button onclick="switchTab('day2')" id="tab-day2" class="py-2.5 rounded-lg transition-all text-slate-400 active:bg-slate-700/50">Day 2</button>
+                <button onclick="switchTab('day3')" id="tab-day3" class="py-2.5 rounded-lg transition-all text-slate-400 active:bg-slate-700/50">Day 3</button>
+            </div>
+
+            <!-- Spreadsheet Grid Content Panels -->
+
+            <div id="spreadsheet-container" class="space-y-3">
+                <div class="flex items-center justify-between px-1">
+                    <h2 id="panel-title-text" class="text-xs font-bold text-slate-400 uppercase tracking-wider">Workout Execution Lines</h2>
+                    <button onclick="toggleViewMode()" id="view-toggle-btn" class="text-xs text-blue-400 font-semibold flex items-center gap-1 active:text-blue-300">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        View History Sheet
+                    </button>
+                </div>
+
+                <!-- Input Entry Container Panel -->
+                <div id="workout-panel" class="space-y-3">
+                    <div id="mobile-card-list" class="space-y-3">
+                        <!-- Custom dynamic blocks built for rapid mobile thumb entry -->
+                    </div>
+                </div>
+
+                <!-- History Summary Card Sheet Panel -->
+                <div id="history-panel" class="hidden bg-slate-800 border border-slate-700 rounded-2xl overflow-hidden shadow-xl">
+                    <div class="p-3 bg-slate-800/40 border-b border-slate-700 flex items-center justify-between">
+
+                        <span class="text-xs font-bold text-slate-300 tracking-wider">Aggregated Spreadsheet Logs</span>
+                        <button onclick="clearAllData()" class="text-[11px] text-rose-400 font-medium underline active:text-rose-300">Clear Data</button>
+                    </div>
+                    <div class="overflow-x-auto scroll-touch max-h-[400px]">
+                        <table class="w-full text-left border-collapse min-w-[500px]">
+                            <thead>
+                                <tr class="bg-slate-900 text-slate-400 text-[10px] font-bold uppercase tracking-wider border-b border-slate-700">
+                                    <th class="p-2.5">Date</th>
+                                    <th class="p-2.5">Day</th>
+                                    <th class="p-2.5">Exercise</th>
+                                    <th class="p-2.5 text-center">Set Logs</th>
+                                    <th class="p-2.5">Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody id="history-rows" class="divide-y divide-slate-700/50 text-xs text-slate-300 font-mono">
+                                <!-- Log components added via JS calculations -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div id="empty-history-msg" class="p-8 text-center text-slate-500 text-xs hidden">
+                        No weight logs recorded yet. Fill inputs and click save to compile spreadsheet rows.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sticky Mobile Actions Command Bar -->
+        <div class="mt-6 pt-3 border-t border-slate-800" id="bottom-bar-action">
+            <button onclick="saveCurrentSession()" class="w-full bg-blue-600 active:bg-blue-700 text-white font-bold text-base py-3.5 px-4 rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 tracking-wide">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                Save Workout Log
+            </button>
+        </div>
+
+    </div>
+
+    <!-- JavaScript Data Management Layer -->
+    <script>
+
+        // Chronological full routine database mapping with selective tracking models
+        const routineData = {
+            day1: [
+                { id: "d1_w1", name: "Warm-Up: Open the Gate", target: "2 Rounds x 8/sd", type: "checkbox", sets: 2 },
+                { id: "d1_w2", name: "Warm-Up: Overhead Squat (Band)", target: "2 Rounds x 12", type: "checkbox", sets: 2 },
+                { id: "d1_s1", name: "Speed: 5-Yard Lateral Shuffle", target: "2 Rounds x 15s", type: "checkbox", sets: 2 },
+                { id: "d1_s2", name: "Speed: Lateral Line Bounds", target: "2 Rounds x 10 tot", type: "checkbox", sets: 2 },
+                { id: "front_squat", name: "Block A1: Barbell Front Squat", target: "2-3 x 6-8", type: "weight" },
+                { id: "landmine_press", name: "Block A2: Barbell Landmine Press", target: "2-3 x 8/sd", type: "weight" },
+                { id: "trx_lunge_jumps", name: "Block A3: TRX Lunge Jumps", target: "2-3 x 10 tot", type: "checkbox", sets: 3 },
+                { id: "kb_swing", name: "Block B1: Kettlebell Swing", target: "2-3 x 12", type: "weight" },
+                { id: "trx_row", name: "Block B2: TRX Inverted Row", target: "2-3 x 10", type: "checkbox", sets: 3 },
+                { id: "pallof_press", name: "Block B3: Banded Pallof Press", target: "2-3 x 10/sd", type: "checkbox", sets: 3 },
+                { id: "heavy_bag", name: "Finisher: Heavy Bag Power Loops", target: "3 x 30s", type: "checkbox", sets: 3 }
+            ],
+            day2: [
+                { id: "d2_w1", name: "Warm-Up: Banded X-Walks", target: "2 Rnds x 12/way", type: "checkbox", sets: 2 },
+                { id: "d2_w2", name: "Warm-Up: Runner's Lunge + Rot.", target: "2 Rounds x 6/sd", type: "checkbox", sets: 2 },
+                { id: "d2_s1", name: "Speed: Diagonal Skater Bounds", target: "2 Rounds x 8 tot", type: "checkbox", sets: 2 },
+
+                { id: "rev_lunge", name: "Block A1: Barbell Reverse Lunge", target: "2-3 x 6-8/sd", type: "weight" },
+                { id: "trx_pullup", name: "Block A2: TRX Inverted Pull-Ups", target: "2-3 x 8-10", type: "checkbox", sets: 3 },
+                { id: "floor_press", name: "Block A3: Barbell Floor Press", target: "2-3 x 8", type: "weight" },
+                { id: "kb_slerdl", name: "Block B1: Kettlebell Single-Leg RDL", target: "2-3 x 8/side", type: "weight" },
+                { id: "kb_goblet", name: "Block B2: Kettlebell Goblet Squat", target: "2-3 x 8", type: "weight" },
+                { id: "squat_hold", name: "Finisher: Supported Deep Squat Hold", target: "2 x 60s", type: "checkbox", sets: 2 }
+            ],
+            day3: [
+                { id: "d3_w1", name: "Warm-Up: Banded Y-Raises", target: "2 Rounds x 10", type: "checkbox", sets: 2 },
+                { id: "d3_w2", name: "Warm-Up: World's Greatest Stretch", target: "2 Rounds x 5/sd", type: "checkbox", sets: 2 },
+                { id: "d3_s1", name: "Speed: 5-Yd Shuffle to Sprint Step", target: "2 Rounds x 3/sd", type: "checkbox", sets: 2 },
+                { id: "barbell_rdl", name: "Block A1: Barbell Romanian Deadlift", target: "2-3 x 8", type: "weight" },
+                { id: "incline_press", name: "Block A2: Barbell Incline Chest Press", target: "2-3 x 8", type: "weight" },
+                { id: "cossack_squat", name: "Block A3: Kettlebell Cossack Squat", target: "2-3 x 6/side", type: "weight" },
+                { id: "bulgarian_squat", name: "Block B1: TRX Rear-Foot Elevated Squat", target: "2-3 x 6-8/sd", type: "checkbox", sets: 3 },
+                { id: "kb_row", name: "Block B2: Kettlebell Single-Arm Row", target: "2-3 x 8/side", type: "weight" },
+                { id: "rowing_flush", name: "Finisher: Parasympathetic Flush", target: "1 x 500m", type: "checkbox", sets: 1 }
+            ]
+        };
+
+
+        let currentActiveTab = 'day1';
+        let isViewingHistory = false;
+        let trackerStorage = JSON.parse(localStorage.getItem('hockey_workout_tracker')) || {};
+
+        window.onload = function() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            document.getElementById('log-date').value = `${year}-${month}-${day}`;
+
+            renderMobileGrid();
+        };
+
+        function switchTab(tabKey) {
+            currentActiveTab = tabKey;
+            isViewingHistory = false;
+
+            const buttons = document.querySelectorAll('#tab-day1, #tab-day2, #tab-day3');
+
+            buttons.forEach(btn => {
+                if (btn.id === `tab-${tabKey}`) {
+                    btn.className = "py-2.5 rounded-lg transition-all text-white bg-blue-600 shadow-md";
+                } else {
+                    btn.className = "py-2.5 rounded-lg transition-all text-slate-400 active:bg-slate-700/50";
+                }
+            });
+
+            document.getElementById('workout-panel').classList.remove('hidden');
+            document.getElementById('history-panel').classList.add('hidden');
+            document.getElementById('bottom-bar-action').classList.remove('hidden');
+            document.getElementById('panel-title-text').textContent = "Workout Execution Lines";
+
+            const viewToggle = document.getElementById('view-toggle-btn');
+            viewToggle.innerHTML = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> View History Sheet`;
+
+            renderMobileGrid();
+        }
+
+
+        function toggleViewMode() {
+            const workoutPanel = document.getElementById('workout-panel');
+            const historyPanel = document.getElementById('history-panel');
+            const bottomBar = document.getElementById('bottom-bar-action');
+            const viewToggle = document.getElementById('view-toggle-btn');
+            const titleText = document.getElementById('panel-title-text');
+
+            if (isViewingHistory) {
+                workoutPanel.classList.remove('hidden');
+                historyPanel.classList.add('hidden');
+                bottomBar.classList.remove('hidden');
+                titleText.textContent = "Workout Execution Lines";
+                viewToggle.innerHTML = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> View History Sheet`;
+                isViewingHistory = false;
+            } else {
+                workoutPanel.classList.add('hidden');
+                historyPanel.classList.remove('hidden');
+                bottomBar.classList.add('hidden');
+                titleText.textContent = "Spreadsheet View Mode";
+
+                viewToggle.innerHTML = `<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg> Input Rows`;
+                renderHistoryLog();
+                isViewingHistory = true;
+            }
+        }
+
+        // Render complete mobile workout stack sequentially
+        function renderMobileGrid() {
+            const container = document.getElementById('mobile-card-list');
+            container.innerHTML = '';
+
+            const exercises = routineData[currentActiveTab];
+            const currentDate = document.getElementById('log-date').value;
+            const existingSession = trackerStorage[currentDate]?.[currentActiveTab] || {};
+
+            exercises.forEach(ex => {
+                const card = document.createElement('div');
+                card.className = "bg-slate-800 border border-slate-700 rounded-2xl p-4 shadow-md space-y-3";
+
+
+                // Common header logic
+                let innerHTMLContent = `
+                    <div class="flex items-center justify-between border-b border-slate-700/60 pb-2">
+                        <span class="font-bold text-white text-sm tracking-tight">${ex.name}</span>
+                        <span class="bg-slate-900 border border-slate-700 text-slate-400 font-semibold text-[11px] px-2.5 py-0.5 rounded-full">${ex.target}</span>
+                    </div>
+                `;
+
+                if (ex.type === 'weight') {
+                    // Render weight log numerical data cells
+                    const prev = existingSession[ex.id] || { w1: '', r1: '', w2: '', r2: '', w3: '', r3: '', notes: '' };
+                    innerHTMLContent += `
+                        <div class="grid grid-cols-3 gap-2">
+                            <div class="bg-slate-900/60 p-2 rounded-xl border border-slate-700/40 text-center">
+                                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Set 1</span>
+                                <div class="flex items-center justify-center gap-0.5">
+                                    <input type="number" pattern="[0-9]*" placeholder="Lbs" value="${prev.w1}" id="${ex.id}-w1" class="w-full bg-slate-900 text-white font-semibold text-center py-2 px-1 rounded-lg border border-slate-600 focus:ring-1 focus:ring-blue-500 outline-none text-base">
+                                    <span class="text-slate-600 text-xs font-bold">/</span>
+                                    <input type="number" pattern="[0-9]*" placeholder="Reps" value="${prev.r1}" id="${ex.id}-r1" class="w-full bg-slate-900 text-white font-semibold text-center py-2 px-1 rounded-lg border border-slate-600 focus:ring-1 focus:ring-blue-500 outline-none text-base">
+
+                                </div>
+                            </div>
+                            <div class="bg-slate-900/60 p-2 rounded-xl border border-slate-700/40 text-center">
+                                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Set 2</span>
+                                <div class="flex items-center justify-center gap-0.5">
+                                    <input type="number" pattern="[0-9]*" placeholder="Lbs" value="${prev.w2}" id="${ex.id}-w2" class="w-full bg-slate-900 text-white font-semibold text-center py-2 px-1 rounded-lg border border-slate-600 focus:ring-1 focus:ring-blue-500 outline-none text-base">
+                                    <span class="text-slate-600 text-xs font-bold">/</span>
+                                    <input type="number" pattern="[0-9]*" placeholder="Reps" value="${prev.r2}" id="${ex.id}-r2" class="w-full bg-slate-900 text-white font-semibold text-center py-2 px-1 rounded-lg border border-slate-600 focus:ring-1 focus:ring-blue-500 outline-none text-base">
+                                </div>
+                            </div>
+                            <div class="bg-slate-900/60 p-2 rounded-xl border border-slate-700/40 text-center">
+                                <span class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Set 3</span>
+                                <div class="flex items-center justify-center gap-0.5">
+                                    <input type="number" pattern="[0-9]*" placeholder="Lbs" value="${prev.w3}" id="${ex.id}-w3" class="w-full bg-slate-900 text-white font-semibold text-center py-2 px-1 rounded-lg border border-slate-600 focus:ring-1 focus:ring-blue-500 outline-none text-base">
+                                    <span class="text-slate-600 text-xs font-bold">/</span>
+                                    <input type="number" pattern="[0-9]*" placeholder="Reps" value="${prev.r3}" id="${ex.id}-r3" class="w-full bg-slate-900 text-white font-semibold text-center py-2 px-1 rounded-lg border border-slate-600 focus:ring-1 focus:ring-blue-500 outline-none text-base">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <input type="text" placeholder="Add mechanical setup observations..." value="${prev.notes}" id="${ex.id}-notes" class="w-full bg-slate-900 text-slate-300 text-xs p-2.5 rounded-xl border border-slate-600 focus:ring-1 focus:ring-blue-500 outline-none font-medium placeholder-slate-500">
+                        </div>
+                    `;
+                } else if (ex.type === 'checkbox') {
+                    // Render custom ephemeral toggle rows (Not bound to local database)
+                    let checkboxGroup = `<div class="flex flex-wrap gap-2 pt-1">`;
+                    for (let s = 1; s <= ex.sets; s++) {
+                        checkboxGroup += `
+                            <label class="flex-1 min-w-[75px] bg-slate-900/40 border border-slate-700 rounded-xl p-2.5 flex items-center justify-center gap-2 active:bg-slate-700/30 transition-all cursor-pointer">
+                                <input type="checkbox" class="w-4 h-4 rounded text-blue-600 bg-slate-900 border-slate-600 focus:ring-0 outline-none accent-blue-500">
+                                <span class="text-xs font-semibold text-slate-300">Set ${s}</span>
+                            </label>
+                        `;
+                    }
+                    checkboxGroup += `</div>`;
+                    innerHTMLContent += checkboxGroup;
+                }
+
+
+                card.innerHTML = innerHTMLContent;
+                container.appendChild(card);
+            });
+        }
+
+        // Only parse and save structural metrics marked 'weight' to spreadsheet backend
+        function saveCurrentSession() {
+            const currentDate = document.getElementById('log-date').value;
+            if(!currentDate) {
+                alert("Please select a tracking timeline parameter.");
+                return;
+            }
+
+            if (!trackerStorage[currentDate]) {
+                trackerStorage[currentDate] = {};
+            }
+
+            trackerStorage[currentDate][currentActiveTab] = {};
+            const exercises = routineData[currentActiveTab];
+
+
+            exercises.forEach(ex => {
+                if (ex.type === 'weight') {
+                    trackerStorage[currentDate][currentActiveTab][ex.id] = {
+                        name: ex.name,
+                        w1: document.getElementById(`${ex.id}-w1`).value,
+                        r1: document.getElementById(`${ex.id}-r1`).value,
+                        w2: document.getElementById(`${ex.id}-w2`).value,
+                        r2: document.getElementById(`${ex.id}-r2`).value,
+                        w3: document.getElementById(`${ex.id}-w3`).value,
+                        r3: document.getElementById(`${ex.id}-r3`).value,
+                        notes: document.getElementById(`${ex.id}-notes`).value
+                    };
+                }
+            });
+
+            localStorage.setItem('hockey_workout_tracker', JSON.stringify(trackerStorage));
+            showNotification(`Weight updates for Day ${currentActiveTab.replace('day','')} logged cleanly.`);
+        }
+
+
+        // Map data sheets directly into compact spreadsheet viewports
+        function renderHistoryLog() {
+            const tbody = document.getElementById('history-rows');
+            const emptyMsg = document.getElementById('empty-history-msg');
+            tbody.innerHTML = '';
+
+            const dates = Object.keys(trackerStorage).sort((a, b) => new Date(b) - new Date(a));
+
+            if (dates.length === 0) {
+                emptyMsg.classList.remove('hidden');
+                return;
+            }
+            emptyMsg.classList.add('hidden');
+
+            dates.forEach(date => {
+                const dayBlocks = trackerStorage[date];
+                Object.keys(dayBlocks).forEach(dayKey => {
+                    const exercises = dayBlocks[dayKey];
+                    Object.keys(exercises).forEach(exId => {
+
+                        const data = exercises[exId];
+
+                        if(data.w1 || data.r1 || data.w2 || data.r2 || data.w3 || data.r3 || data.notes) {
+                            const tr = document.createElement('tr');
+                            tr.className = "bg-slate-800 border-b border-slate-700/50 text-[11px]";
+                            tr.innerHTML = `
+                                <td class="p-2.5 font-bold text-slate-400">${date.substring(5)}</td>
+                                <td class="p-2.5 font-semibold text-blue-400 uppercase">D${dayKey.replace('day','')}</td>
+                                <td class="p-2.5 font-medium text-white max-w-[100px] truncate">${data.name.replace('Block ', '')}</td>
+                                <td class="p-2.5 text-center text-slate-300">
+                                    ${data.w1||'-'}/${data.r1||'-'} • ${data.w2||'-'}/${data.r2||'-'} • ${data.w3||'-'}/${data.r3||'-'}
+                                </td>
+                                <td class="p-2.5 text-slate-400 italic max-w-[110px] truncate">${data.notes || ''}</td>
+                            `;
+                            tbody.appendChild(tr);
+                        }
+                    });
+                });
+            });
+
+        }
+
+        function copyCSVToClipboard() {
+            let csvContent = "Date,Workout Day,Exercise Name,Set 1 Weight,Set 1 Reps,Set 2 Weight,Set 2 Reps,Set 3 Weight,Set 3 Reps,Notes\n";
+            const dates = Object.keys(trackerStorage).sort();
+
+            if(dates.length === 0) {
+                const activeEx = routineData[currentActiveTab];
+                const activeDate = document.getElementById('log-date').value;
+                activeEx.forEach(ex => {
+                    if(ex.type === 'weight') {
+                        csvContent += `"${activeDate}","Day ${currentActiveTab.replace('day','')}","${ex.name}","","","","","","",""\n`;
+                    }
+                });
+            } else {
+                dates.forEach(date => {
+                    Object.keys(trackerStorage[date]).forEach(dayKey => {
+                        Object.keys(trackerStorage[date][dayKey]).forEach(exId => {
+                            const data = trackerStorage[date][dayKey][exId];
+
+                            csvContent += `"${date}","Day ${dayKey.replace('day','')}","${data.name}","${data.w1}","${data.r1}","${data.w2}","${data.r2}","${data.w3}","${data.r3}","${data.notes.replace(/"/g, '""')}"\n`;
+                        });
+                    });
+                });
+            }
+
+            const dummyTextArea = document.createElement("textarea");
+            document.body.appendChild(dummyTextArea);
+            dummyTextArea.value = csvContent;
+            dummyTextArea.select();
+            document.execCommand("copy");
+            document.body.removeChild(dummyTextArea);
+
+            showNotification("Dataset exported to clipboard. Ready for Sheets/Excel paste.");
+        }
+
+        function clearAllData() {
+            if (confirm("Permanently wipe your weight history dataset?")) {
+                trackerStorage = {};
+
+                localStorage.removeItem('hockey_workout_tracker');
+                if (isViewingHistory) renderHistoryLog();
+                else renderMobileGrid();
+                showNotification("Database cleared.");
+            }
+        }
+
+        function showNotification(msg) {
+            const box = document.getElementById('notification-box');
+            const text = document.getElementById('notification-text');
+            text.textContent = msg;
+            box.classList.remove('hidden');
+            setTimeout(() => { hideNotification(); }, 4000);
+        }
+
+        function hideNotification() {
+            document.getElementById('notification-box').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
+
+
